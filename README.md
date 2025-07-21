@@ -1,12 +1,45 @@
-# React + Vite
+## BEFORE YOU READ - This project is still a work in progress.  Check back later for more updates?
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+# The Intake
 
-Currently, two official plugins are available:
+A simple, powerful macro tracking app designed for riders, lifters, and food lovers.  
+Track your ingredients, build recipes, log meals, and stay on top of your nutrition goals — all in one place.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+---
 
-## Expanding the ESLint configuration
+## Features
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- Create and manage ingredients with detailed macros (calories, protein, carbs, fats, sugars, sodium)  
+- Build and save recipes from ingredients  
+- Log meals consisting of ingredients and/or recipes  
+- Track daily and weekly macro progress  
+- User accounts for personalized tracking (coming soon)  
+
+---
+
+## Tech Stack
+
+- React + Vite  
+- Tailwind CSS for styling  
+- Framer Motion for animations  
+- heroicons for UI icons  
+- Backend/API (TBD)  
+
+---
+
+## Getting Started
+
+1. Clone the repo  
+2. Run `npm install`  
+3. Run `npm run dev` to start the dev server  
+4. Open `http://localhost:5173` in your browser  
+
+---
+
+## Roadmap
+
+- User authentication and profiles  
+- Backend API and database integration  
+- Meal planning and shopping lists  
+- Advanced progress reports and charts  
+- Mobile responsive design  
