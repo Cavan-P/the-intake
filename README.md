@@ -1,4 +1,4 @@
-## BEFORE YOU READ - This project is still a work in progress.  Check back later for more updates?
+## BEFORE YOU READ - This project is still a work in progress.  Check back later for more updates!
 
 # The Intake
 
