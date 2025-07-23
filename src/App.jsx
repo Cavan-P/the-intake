@@ -12,6 +12,7 @@ import Landing from "./pages/Landing"
 import Login from "./pages/Login"
 import Signup from "./pages/Signup"
 import GetStarted from "./pages/Get-Started"
+import Home from "./pages/Home"
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
       <Route path='login' element={<Login /> } />
       <Route path='signup' element={<Signup /> } />
       <Route path='get-started' element={<GetStarted /> } />
+      <Route path='/home' element={<Home /> } />
     </Routes>
   )
 }

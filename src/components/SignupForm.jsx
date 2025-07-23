@@ -1,19 +1,24 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 const SignupForm = _ => {
+    const [username, setUsername] = useState('')
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
+
+    const navigate = useNavigate()
 
     const handleSignup = async (e) => {
         e.preventDefault()
         const res = await fetch('http://localhost:3001/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify({ username, email, password })
         })
 
         const data = await res.json()
-        alert(data.message || 'Signed up!')
+        
+        navigate("/home")
     }
 
     return (
@@ -26,6 +31,14 @@ const SignupForm = _ => {
                     Create Account
                 </h2>
 
+                <input
+                    className="w-full mb-4 p-3 rounded bg-zinc-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    type="text"
+                    placeholder="Username"
+                    value={username}
+                    onChange={e => setUsername(e.target.value)}
+                    required
+                />
                 <input
                     className="w-full mb-4 p-3 rounded bg-zinc-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     type="email"
