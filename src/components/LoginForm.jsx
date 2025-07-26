@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
+import supabase from '../utils/supabase'
+
 const LoginForm = _ => {
 
     const navigate = useNavigate()
@@ -14,28 +16,18 @@ const LoginForm = _ => {
         e.preventDefault()
         setError('')
 
-        try {
-            const res = await fetch('http://localhost:3001/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, email, password })
-            })
+        const { data, error } = await supabase.auth.signInWithPassword({
+            email,
+            password
+        })
 
-            const data = await res.json()
+        if(error){
+            setError(error.message)
+            return
+        }
 
-            if (res.status === 200 && data.token) {
-                localStorage.setItem('token', data.token)
-                navigate('/home')
-            } else if (res.status == 404) {
-                setError('No account found with this email')
-            } else if (res.status == 401) {
-                setError('Incorrect password')
-            } else {
-                setError('Something went wrong. Please try again.')
-            }
-
-        } catch (err) {
-            setError('Unable to connect. Is the server running?')
+        if(data.session){
+            navigate('/home')
         }
     }
 

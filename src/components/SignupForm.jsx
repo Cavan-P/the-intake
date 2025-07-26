@@ -1,24 +1,43 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import supabase from '../utils/supabase'
 
 const SignupForm = _ => {
     const [username, setUsername] = useState('')
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
+    const [error, setError] = useState('')
 
     const navigate = useNavigate()
 
     const handleSignup = async (e) => {
         e.preventDefault()
-        const res = await fetch('http://localhost:3001/signup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, email, password })
+        setError(null)
+
+        const { data, error } = await supabase.auth.signUp({
+            email: email,
+            password: password,
+            options: {
+                data: { username }
+            }
         })
 
-        const data = await res.json()
-        
-        navigate("/home")
+        console.log("Here")
+
+        if(error){
+            console.log("Errored ", error)
+            setError(error.message)
+            return
+        }
+
+        if(data.session){
+            console.log("Has session")
+            navigate('/home')
+        }
+        else {
+            console.log("No has session")
+            setError('Check your email to confirm your account before logging in')
+        }
     }
 
     return (

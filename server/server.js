@@ -1,35 +1,41 @@
 const express = require('express')
-const bcrypt = require('bcrypt')
-const jwt = require('jsonwebtoken')
 const cors = require('cors')
+const { createClient } = require('@supabase/supabase-js')
+
+require('dotenv').config()
 
 const app = express()
 app.use(cors())
 app.use(express.json())
 
-const users = []
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY)
 
-const SECRET = 'dontputthisinhereforreal'
+async function authenticate(req, res, next){
+    console.log('entered authentication')
 
-app.post('/signup', async (req, res) => {
-    const { username, email, password } = req.body
-    const hashed = await bcrypt.hash(password, 10)
+    const authHeader = req.headers.authorization
+    if(!authHeader) return res.status(401).json({ message: 'Missing auth header' })
+    console.log('created auth header')
 
-    users.push({ username, email, password: hashed })
-    res.status(200).json({ message: 'Successfully signed up'})
-})
+    const token = authHeader.split(' ')[1]
+    if(!token){
+        console.log('No token found in auth header: ', authHeader)
+        return res.status(401).json({ message: 'Malformed auth header' })
+    }
+    console.log('found token')
 
-app.post('/login', async (req, res) => {
-    const { username, email, password } = req.body
-    const user = users.find(u => u.email == email)
+    const { data: user, error } = await supabase.auth.getUser(token)
 
-    if(!user) return res.status(404).json({ message: 'User not found' })
-    
-    const match = await bcrypt.compare(password, user.password)
-    if(!match) return res.status(401).json({ message: 'Wrong password' })
+    console.log('authenticated user?')
 
-    const token = jwt.sign({ email, username }, SECRET, { expiresIn: '1h' })
-    res.json({ token })
+    if(error || !user) return res.status(401).json({ message: 'Invalid or expired token' })
+
+    req.user = user
+    next()
+}
+
+app.get('/profile', authenticate, async (req, res) => {
+    res.json({ email: req.user.email, username: req.user.user_metadata.username })
 })
 
 app.listen(3001, () => console.log('Server running on port 3001'))

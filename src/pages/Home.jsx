@@ -1,24 +1,26 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
+import supabase from '../utils/supabase'
 
 const Home = _ => {
-    const parseJWT = token => {
-        try {
-            return JSON.parse(atob(token.split('.')[1]))
-        } catch {
-            return null
-        }
-    }
-    const token = localStorage.getItem('token')
-    let username = ''
+    const [username, setUsername] = useState('')
+    const [loading, setLoading] = useState(true)
 
-    if (token) {
-        try {
-            const decoded = parseJWT(token)
-            console.log(decoded)
-            username = decoded?.username
-        } catch (err) {
-            console.error('Invalid token:', err)
+    useEffect(_ => {
+        const getUser = async _ => {
+            const { data: { session }, error } = await supabase.auth.getSession()
+
+            if(session && session.user) {
+                setUsername(session.user.user_metadata?.username || '')
+            }
+
+            setLoading(false)
         }
+
+        getUser()
+    }, [])
+
+    if(loading){
+        return <p className="text-white text-center mt-10">Loading...</p>
     }
 
     return (
