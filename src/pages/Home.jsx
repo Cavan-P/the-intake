@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react'
 import supabase from '../utils/supabase'
+import { useNavigate } from 'react-router-dom'
 
 const Home = _ => {
     const [username, setUsername] = useState('')
     const [loading, setLoading] = useState(true)
+    const [avatarURL, setAvatarURL] = useState('')
+    const navigate = useNavigate()
 
     useEffect(_ => {
         const getUser = async _ => {
@@ -11,6 +14,7 @@ const Home = _ => {
 
             if(session && session.user) {
                 setUsername(session.user.user_metadata?.username || '')
+                setAvatarURL(session.user.user_metadata?.avatar_url || '')
             }
 
             setLoading(false)
@@ -19,12 +23,48 @@ const Home = _ => {
         getUser()
     }, [])
 
+    const handleLogout = async _ => {
+        await supabase.auth.signOut()
+        navigate('/login')
+    }
+
     if(loading){
         return <p className="text-white text-center mt-10">Loading...</p>
     }
 
     return (
         <div className="min-h-screen bg-black text-white flex flex-col items-center px-4 py-8">
+            <header className="w-full max-w-4xl flex items-center justify-between mb-8 border-b border-zinc-700 pb-4">
+                <div className="flex items-center space-x-4">
+                    <img
+                        src={avatarURL || 'https://www.gravatar.com/avatar/?d=mp&s=48'}
+                        alt="Profile"
+                        className="w-12 h-12 rounded-full border border-zinc-600"
+                    />
+                    <span className="text-lg font-semibold">{username || 'User'}</span>
+                </div>
+                <nav className="flex space-x-6">
+                <button
+                    onClick={() => navigate('/dashboard')}
+                    className="hover:text-blue-400 transition"
+                >
+                    Dashboard
+                </button>
+                <button
+                    onClick={() => navigate('/settings')}
+                    className="hover:text-blue-400 transition"
+                >
+                    Settings
+                </button>
+                </nav>
+                <button
+                    onClick={handleLogout}
+                    className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md transition"
+                >
+                Log Out
+                </button>
+            </header>
+
             <div className="w-full max-w-4xl">
                 <h1 className="text-4xl md:text-5xl font-bold text-center mb-6 bg-gradient-to-r from-blue-500 via-fuchsia-500 to-indigo-600 bg-clip-text text-transparent">
                     Welcome, {username}!
