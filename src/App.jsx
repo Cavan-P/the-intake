@@ -14,6 +14,7 @@ import Signup from "./pages/Signup"
 import GetStarted from "./pages/Get-Started"
 import Home from "./pages/Home"
 import AddIngredient from './pages/AddIngredient'
+import Ingredients from './pages/Ingredients'
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
       <Route path='get-started' element={<GetStarted /> } />
       <Route path='/home' element={<Home /> } />
       <Route path='/add-ingredient' element={<AddIngredient /> } />
+      <Route path='/ingredients' element={<Ingredients /> } />
     </Routes>
   )
 }

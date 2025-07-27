@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import supabase from '../utils/supabase'
-import { v4 as uuidv4 } from 'uuid'
+
+import BackToHome from '../components/BackToHome'
 
 const { data: { user } } = await supabase.auth.getUser()
 
@@ -31,6 +32,7 @@ const AddIngredient = _ => {
         brand: '',
         serving_size_grams: '',
         serving_size_desc: '',
+        calories: '',
         protein: '',
         carbs: '',
         sugar: '',
@@ -86,6 +88,7 @@ const AddIngredient = _ => {
             brand: form.brand.trim() || null,
             serving_size_grams: toNum(form.serving_size_grams),
             serving_size_description: form.serving_size_desc.trim() || null,
+            calories: toNum(form.calories),
             protein_g: toNum(form.protein),
             carbs_g: toNum(form.carbs),
             sugar_g: toNum(form.sugar),
@@ -112,6 +115,7 @@ const AddIngredient = _ => {
                 brand: '',
                 serving_size_grams: '',
                 serving_size_desc: '',
+                calories: '',
                 protein: '',
                 carbs: '',
                 sugar: '',
@@ -140,7 +144,8 @@ const AddIngredient = _ => {
             <Input label="Name *" name="name" value={form.name} onChange={handleChange} required />
             <Input label="Brand" name="brand" value={form.brand} onChange={handleChange} />
             <Input label="Serving Size (grams)" name="serving_size_grams" value={form.serving_size_grams} onChange={handleChange} type="number" />
-            <Input label="Serving Size Description" name="serving_size_desc" value={form.serving_size_desc} onChange={handleChange} />
+            <Input label="Serving Size Description" name="serving_size_desc" value={form.serving_size_description} onChange={handleChange} />
+            <Input label="Calories" name="calories" value={form.calories} onChange={handleChange} type="number" setep="1" />
             <Input label="Protein (g)" name="protein" value={form.protein} onChange={handleChange} type="number" step="0.1" />
             <Input label="Carbohydrates (g)" name="carbs" value={form.carbs} onChange={handleChange} type="number" step="0.1" />
             <Input label="Sugar (g)" name="sugar" value={form.sugar} onChange={handleChange} type="number" step="0.1" />
@@ -173,6 +178,8 @@ const AddIngredient = _ => {
               {loading ? 'Adding...' : 'Add Ingredient'}
             </button>
           </form>
+
+            <BackToHome />
         </div>
       )
 }
