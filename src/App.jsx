@@ -13,6 +13,7 @@ import Login from "./pages/Login"
 import Signup from "./pages/Signup"
 import GetStarted from "./pages/Get-Started"
 import Home from "./pages/Home"
+import AddIngredient from './pages/AddIngredient'
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
       <Route path='signup' element={<Signup /> } />
       <Route path='get-started' element={<GetStarted /> } />
       <Route path='/home' element={<Home /> } />
+      <Route path='/add-ingredient' element={<AddIngredient /> } />
     </Routes>
   )
 }

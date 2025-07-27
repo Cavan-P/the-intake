@@ -14,31 +14,46 @@ const SignupForm = _ => {
         e.preventDefault()
         setError(null)
 
+        // First, probe to see if this email already has an account
+        const { error: loginError } = await supabase.auth.signInWithPassword({
+            email,
+            password: crypto.randomUUID()
+        })
+
+        // If we got any error *except* for "Invalid login credentials" or "Email not confirmed"
+        // then we can assume the user doesn't exist and it's safe to proceed
+        const accountExists =
+            loginError &&
+            (loginError.message === 'Invalid login credentials' ||
+            loginError.message === 'Email not confirmed')
+
+        if (accountExists) {
+            setError("An account already exists with that email. Try logging in instead.")
+            return
+        }
+
+        // Proceed with signup if we didn't detect an existing account
         const { data, error } = await supabase.auth.signUp({
-            email: email,
-            password: password,
+            email,
+            password,
             options: {
                 data: { username }
             }
         })
 
-        console.log("Here")
-
-        if(error){
-            console.log("Errored ", error)
+        if (error) {
             setError(error.message)
             return
         }
 
-        if(data.session){
-            console.log("Has session")
+        if (data.session) {
             navigate('/home')
-        }
-        else {
-            console.log("No has session")
-            setError('Check your email to confirm your account before logging in')
+        } else {
+            // Optionally show email confirmation info
+            // setError('Check your email to confirm your account before logging in')
         }
     }
+
 
     return (
         <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center px-4">
@@ -81,6 +96,10 @@ const SignupForm = _ => {
                     Sign Up
                 </button>
             </form>
+
+            {error && (
+                <p className="text-red-500 text-sm mt-4 text-center">{error}</p>
+            )}
         </div>
     )
 }
