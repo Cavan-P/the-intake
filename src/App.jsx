@@ -15,6 +15,9 @@ import GetStarted from "./pages/Get-Started"
 import Home from "./pages/Home"
 import AddIngredient from './pages/AddIngredient'
 import Ingredients from './pages/Ingredients'
+import Settings from './pages/Settings'
+import Recipes from './pages/Recipes'
+import AddRecipe from './pages/AddRecipe'
 
 function App() {
   return (
@@ -27,6 +30,9 @@ function App() {
       <Route path='/home' element={<Home /> } />
       <Route path='/add-ingredient' element={<AddIngredient /> } />
       <Route path='/ingredients' element={<Ingredients /> } />
+      <Route path='/settings' element={<Settings /> } />
+      <Route path='/recipes' element={<Recipes /> } />
+      <Route path="/add-recipe" element={<AddRecipe /> } />
     </Routes>
   )
 }

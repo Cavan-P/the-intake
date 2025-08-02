@@ -87,10 +87,16 @@ const Home = () => {
                     <section className="bg-white/5 rounded-lg p-6 font-light tracking-wide flex flex-col items-center">
                         <h2 className="text-xl mb-3 font-semibold text-white/90">Quick Actions</h2>
                         <button
-                            onClick={() => navigate('/ingredients')} // or whatever your route is
+                            onClick={() => navigate('/ingredients')}
                             className="px-5 py-2 rounded bg-gradient-to-r from-blue-500 via-purple-600 to-indigo-600 text-white font-thin hover:brightness-110 transition"
                         >
                             View Your Ingredients
+                        </button>
+                        <button
+                            onClick={() => navigate('/recipes')}
+                            className="my-5 px-5 py-2 rounded bg-gradient-to-r from-blue-500 via-purple-600 to-indigo-600 text-white font-thin hover:brightness-110 transition"
+                        >
+                            View Your Recipes
                         </button>
                     </section>
                 </div>
