@@ -37,6 +37,22 @@ const AddRecipe = _ => {
     const [description, setDescription] = useState('')
     const [searchQuery, setSearchQuery] = useState('')
 
+    const [steps, setSteps] = useState([])
+
+    const addStep = _ => setSteps([...steps, ''])
+
+    const updateStep = (index, value) => {
+        const updated = [...steps]
+        updated[index] = value
+        setSteps(updated)
+    }
+
+    const removeStep = index => {
+        const updated = [...steps]
+        updated.splice(index, 1)
+        setSteps(updated)
+    }
+
     useEffect(() => {
             const fetchUserAndIngredients = async () => {
             const { data: { user } } = await supabase.auth.getUser()
@@ -64,7 +80,6 @@ const AddRecipe = _ => {
             fetchUserAndIngredients()
     }, [navigate])
 
-
     const toggleIngredient = ingredient => {
         const found = selected.find(i => i.id == ingredient.id)
 
@@ -86,6 +101,67 @@ const AddRecipe = _ => {
     const filteredIngredients = ingredients.filter(ingredient => 
         ingredient.name.toLowerCase().includes(searchQuery.toLowerCase())
     )
+
+    const saveRecipe = async _ => {
+        if(!title.trim() || selected.length == 0 || steps.length == 0){
+            alert("Title, ingredients, and steps are required.")
+            return
+        }
+
+        setLoading(true)
+
+        const { data: recipe, error: recipeError } = await supabase
+            .from('recipes')
+            .insert([
+                {
+                    user_id: user.id,
+                    name: title,
+                    description: description,
+                    shared: false
+                }
+            ])
+            .select()
+            .single()
+
+        if(recipeError){
+            console.error('Error inserting recipe:', recipeError)
+            setLoading(false)
+            return
+        }
+
+        const recipeId = recipe.id
+
+        const ingredientInserts = selected.map(({ id, amount, unit }) => ({
+            recipe_id: recipeId,
+            ingredient_id: id,
+            amount,
+            unit
+        }))
+
+        const stepInserts = steps.map((instruction, index) => ({
+            recipe_id: recipeId,
+            step_number: index + 1,
+            instruction
+        }))
+
+        const { error: ingError } = await supabase.from('recipe_ingredients').insert(ingredientInserts)
+
+        if(ingError){
+            console.error("Error inserting ingredients:", ingError)
+            setLoading(false)
+            return
+        }
+
+        const { error: stepError } = await supabase.from('recipe_steps').insert(stepInserts)
+
+        if(stepError){
+            console.error("Error inserting steps:", stepError)
+            setLoading(false)
+            return
+        }
+
+        navigate(`/recipes/${recipeId}`)
+    }
 
     if (loading) {
         return (
@@ -175,7 +251,7 @@ const AddRecipe = _ => {
                         className="w-full p-3 mb-2 rounded bg-white/5 border border-white/10 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-purple-600"
                     />
 
-                    <ul className="space-y-2 max-h-[70vh] overflow-y-auto pr-2">
+                    <ul className="space-y-2 max-h-[50vh] overflow-y-auto pr-2">
                         {filteredIngredients.map(({ id, name }) => {
                             const isSelected = selected.find(i => i.id == id)
 
@@ -203,6 +279,45 @@ const AddRecipe = _ => {
                     </ul>
                 </div>
             </div>
+
+            <div className="w-full max-w-4xl mt-12">
+                <h2 className="text-2xl mb-4 text-white/80">Steps</h2>
+
+                {steps.map((step, index) => (
+                    <div key={index} className="flex items-start space-x-2 mb-4">
+                        <span className="text-purple-500 text-lg mt-2">{index + 1}.</span>
+                        <textarea
+                            value={step}
+                            onChange={e => updateStep(index, e.target.value)}
+                            rows={2}
+                            placeholder={`Step ${index + 1}...`}
+                            className="w-full p-3 rounded bg-white/5 border border-white/10 text-white placeholder-white/30 resize-none focus:outline-none focus:ring-2 focus:ring-purple-600"
+                        />
+                        <button
+                            onClick={_ => removeStep(index)}
+                            className="text-red-400 hover:text-red-600 mt-2"
+                            title="Remove Step"
+                        >
+                            ✕
+                        </button>
+                    </div>
+                ))}
+
+                <button
+                    onClick={addStep}
+                    className="mt-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-sm"
+                >
+                    + Add Step
+                </button>
+            </div>
+
+            <button
+                onClick={saveRecipe}
+                className="mt-8 px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded text-lg"
+            >
+                Save Recipe
+            </button>
+
         </div>
     )
 }

@@ -18,8 +18,12 @@ import Ingredients from './pages/Ingredients'
 import Settings from './pages/Settings'
 import Recipes from './pages/Recipes'
 import AddRecipe from './pages/AddRecipe'
+import RecipeView from './pages/RecipeView'
+import EditIngredient from './pages/EditIngredient'
 
 function App() {
+  const { id } = useParams()
+
   return (
     <Routes>
       //Landing page (CTA, sign in, sign up)
@@ -33,6 +37,8 @@ function App() {
       <Route path='/settings' element={<Settings /> } />
       <Route path='/recipes' element={<Recipes /> } />
       <Route path="/add-recipe" element={<AddRecipe /> } />
+      <Route path='/recipes/:id' element={<RecipeView /> } />
+      <Route path='/ingredients/:id/edit' element={<EditIngredient /> } />
     </Routes>
   )
 }
