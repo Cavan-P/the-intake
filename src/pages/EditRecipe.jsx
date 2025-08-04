@@ -4,132 +4,198 @@ import supabase from '../utils/supabase'
 
 import BackToHome from '../components/BackToHome'
 
-const EditRecipe = _ => {
-    const { id } = useParams()
+const EditRecipe = () => {
+    const params = useParams()
     const navigate = useNavigate()
-
-    const [formData, setFormData] = useState({
-        name: '',
-        brand: '',
-        calories: '',
-        protein_g: '',
-        carbs_g: '',
-        fat_g: '',
-        serving_size: '',
-        serving_size_units: '',
-        serving_size_description: ''
-    })
-
+    const [recipe, setRecipe] = useState(null)
+    const [ingredients, setIngredients] = useState([])
+    const [steps, setSteps] = useState([])
     const [loading, setLoading] = useState(true)
 
-    useEffect(_ => {
-        const fetchIngredient = async _ => {
-            const { data, error } = await supabase
-                .from('ingredients')
+    const recipeId = params.id
+
+    useEffect(() => {
+        const fetchRecipeData = async () => {
+            setLoading(true)
+
+            const { data: recipeData, error: recipeError } = await supabase
+                .from('recipes')
                 .select('*')
-                .eq('id', id)
+                .eq('id', recipeId)
                 .single()
 
-            if (error) {
-                console.error('Error fetching ingredient:', error)
-            } else {
-                setFormData(data)
-            }
+            const { data: ingredientData } = await supabase
+                .from('recipe_ingredients')
+                .select(`
+                    id,
+                    amount,
+                    unit,
+                    ingredient:ingredient_id (
+                        id,
+                        name
+                    )
+                `)
+                .eq('recipe_id', recipeId)
 
+            const { data: stepData } = await supabase
+                .from('recipe_steps')
+                .select('*')
+                .eq('recipe_id', recipeId)
+                .order('step_number', { ascending: true })
+
+            setRecipe(recipeData)
+            setIngredients(ingredientData || [])
+            setSteps(stepData || [])
             setLoading(false)
-        };
-
-        fetchIngredient()
-    }, [id])
-
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData((prev) => ({
-            ...prev,
-            [name]: value
-        }))
-    }
-
-    const handleSubmit = async (e) => {
-        e.preventDefault()
-
-        const { error } = await supabase
-            .from('ingredients')
-            .update(formData)
-            .eq('id', id)
-
-        if (error) {
-            console.error('Error updating ingredient:', error)
-        } else {
-            navigate('/ingredients')
         }
+
+        if (recipeId) fetchRecipeData()
+    }, [recipeId])
+
+    const handleSave = async () => {
+        const { error } = await supabase
+        .from('recipes').update({
+            name: recipe.name,
+            description: recipe.description,
+        }).eq('id', recipeId)
+
+        for(const item of ingredients){
+            if(item.id && item.ingredient?.id){
+                await supabase.from('ingredients').update({ name: item.ingredient.name }).eq('id', item.ingredient.id)
+                await supabase.from('recipe_ingredients').update({ amount: item.amount, unit: item.unit }).eq('id', item.id)
+            }
+        }
+
+        for(const step of steps){
+            await supabase.from('recipe_steps').update({ instruction: step.instruction, step_number: step.step_number }).eq('id', step.id)
+        }
+
+        if(error){
+            console.error("Error updating recipe:", error)
+        }
+        else{
+            navigate(`/recipes/${recipeId}`) // back to view mode
+        }
+        
     }
 
-    if (loading) return <p className="text-indigo-300">Loading...</p>
+    const handleInputChange = (field, value) => {
+        setRecipe(prev => ({ ...prev, [field]: value }))
+    }
 
-    const Input = ({ label, name, type = 'text', step, required }) => (
-        <div className="flex flex-col">
-            <label htmlFor={name} className="mb-1 text-indigo-400 text-sm tracking-wide">{label}</label>
-            <input
-                id={name}
-                name={name}
-                type={type}
-                step={step}
-                value={formData[name] || ''}
-                onChange={handleChange}
-                required={required}
-                className="rounded px-3 py-2 text-white bg-black outline-1 outline-indigo-400/20 font-thin focus:ring-2 focus:ring-indigo-500"
-                autoComplete="off"
-            />
-        </div>
-    )
+    if (loading) return <p>Loading recipe...</p>
+    if (!recipe) return <p>Recipe not found.</p>
 
     return (
-        <div className="min-h-screen bg-black flex flex-col items-center justify-center px-6 py-12 text-white font-extralight tracking-wide">
-            <h1 className="text-4xl font-thin mb-8 bg-gradient-to-r from-blue-500 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
-                Edit Recipe
-            </h1>
+        <div className="min-w-screen bg-black">
+            <BackToHome />
 
-            <form onSubmit={handleSubmit} className="w-full max-w-xl space-y-6">
-                <Input label="Name *" name="name" required />
-                <Input label="Brand" name="brand" />
-                <Input label="Calories" name="calories" type="number" />
-                <Input label="Protein (g)" name="protein_g" type="number" step="0.1" />
-                <Input label="Carbs (g)" name="carbs_g" type="number" step="0.1" />
-                <Input label="Fat (g)" name="fat_g" type="number" step="0.1" />
-                <Input label="Serving Size (accepts fraction or decimal)" name="serving_size" />
-                <div className="flex flex-col">
-                    <label htmlFor="serving_size_units" className="mb-1 text-indigo-400 text-sm tracking-wide">
-                        Serving Size Units
-                    </label>
-                    <select
-                        name="serving_size_units"
-                        value={formData.serving_size_units || ''}
-                        onChange={handleChange}
-                        className="rounded px-3 py-2 bg-black text-white outline-1 outline-indigo-400/20 font-thin focus:ring-2 focus:ring-indigo-500"
-                    >
-                        <option value="">Select a unit</option>
-                        <option value="g">Grams (g)</option>
-                        <option value="oz">Ounces (oz)</option>
-                        <option value="ml">Milliliters (ml)</option>
-                        <option value="cup">Cup(s)</option>
-                        <option value="tbsp">Tablespoon(s)</option>
-                        <option value="tsp">Teaspoon(s)</option>
-                        <option value="piece">Piece(s)</option>
-                        <option value="scoops">Scoop(s)</option>
-                    </select>
-                </div>
-                <Input label="Serving Size Description" name="serving_size_description" />
+            <div className="min-h-screen bg-black px-6 py-12 max-w-3xl mx-auto text-white font-extralight tracking-wide">
+
+                <h1 className="text-4xl font-thin mb-6 bg-gradient-to-r from-blue-500 via-purple-600 to-indigo-600 bg-clip-text text-transparent select-none">
+                    Edit Recipe
+                </h1>
+
+                <input
+                    type="text"
+                    value={recipe.name}
+                    onChange={e => handleInputChange('name', e.target.value)}
+                    className="bg-black border border-white/30 rounded px-3 py-2 w-full text-white mb-4"
+                    placeholder="Recipe Name"
+                />
+
+                <textarea
+                    value={recipe.description || ''}
+                    onChange={e => handleInputChange('description', e.target.value)}
+                    className="bg-black border border-white/30 rounded px-3 py-2 w-full text-white mb-8"
+                    placeholder="Recipe Description"
+                    rows={3}
+                />
+
+                <section className="mb-12">
+                    <h2 className="text-2xl font-light mb-4 border-b border-white/20 pb-2">
+                        Ingredients
+                    </h2>
+                    <ul className="space-y-2">
+                        {ingredients.map((item, index) => (
+                            <div key={item.id} className="flex gap-2 mb-3">
+                                <input
+                                    className="bg-white/10 p-2 rounded text-white w-16"
+                                    type="text"
+                                    value={item.amount}
+                                    onChange={e => {
+                                        const updated = [...ingredients]
+                                        updated[index].amount = e.target.value
+                                        setIngredients(updated)
+                                    }}
+                                />
+                                <input
+                                    className="bg-white/10 p-2 rounded text-white w-20"
+                                    type="text"
+                                    value={item.unit}
+                                    onChange={e => {
+                                        const updated = [...ingredients]
+                                        updated[index].unit = e.target.value
+                                        setIngredients(updated)
+                                    }}
+                                />
+                                <input
+                                    className="bg-white/10 p-2 rounded text-white flex-1"
+                                    type="text"
+                                    value={item.ingredient?.name || ''}
+                                    onChange={e => {
+                                        const updated = [...ingredients]
+                                        updated[index].ingredient.name = e.target.value
+                                        setIngredients(updated)
+                                    }}
+                                />
+                                <button onClick={() => {
+                                    const updated = [...ingredients]
+                                    updated.splice(index, 1)
+                                    setIngredients(updated)
+                                }}>
+                                    Remove
+                                </button>
+                            </div>
+                        ))}
+                    </ul>
+                </section>
+
+                <section>
+                    <h2 className="text-2xl font-light mb-4 border-b border-white/20 pb-2">
+                        Steps
+                    </h2>
+                    <ol className="list-decimal list-inside space-y-2 pl-4">
+                        {steps.map((step, index) => (
+                            <div key={step.id} className="mb-3">
+                                <textarea
+                                    className="w-full bg-white/10 p-2 rounded text-white"
+                                    value={step.instruction}
+                                    onChange={e => {
+                                        const updated = [...steps]
+                                        updated[index].instruction = e.target.value
+                                        setSteps(updated)
+                                    }}
+                                />
+                                <button onClick={() => {
+                                    const updated = [...steps]
+                                    updated.splice(index, 1)
+                                    setSteps(updated)
+                                }}>
+                                    Remove
+                                </button>
+                            </div>
+                        ))}
+
+                    </ol>
+                </section>
+
                 <button
-                    type="submit"
-                    className="w-full py-3 bg-gradient-to-r from-blue-500 via-purple-600 to-indigo-600 rounded font-thin text-white hover:brightness-110 transition"
+                    onClick={handleSave}
+                    className="mt-10 px-6 py-3 bg-gradient-to-r from-blue-500 via-purple-600 to-indigo-600 text-white rounded hover:opacity-90 transition"
                 >
                     Save Changes
                 </button>
-            </form>
-
-            <div className="mt-6">
-                <BackToHome />
             </div>
         </div>
     )
