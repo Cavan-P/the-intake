@@ -28,7 +28,7 @@ const Ingredients = () => {
 
             const { data, error } = await supabase
                 .from('ingredients')
-                .select('id, name, brand, serving_size, serving_size_description')
+                .select('id, name, brand, serving_size, serving_size_description, serving_size_units')
                 .eq('user_id', user.id)
                 .order('name', { ascending: true })
 
@@ -90,7 +90,7 @@ const Ingredients = () => {
                     <p className="text-white/70 text-center mt-16">No ingredients found. Add some to get started!</p>
                 ) : (
                     <ul className="space-y-4">
-                        {ingredients.map(({ id, name, brand, serving_size, serving_size_description }) => (
+                        {ingredients.map(({ id, name, brand, serving_size, serving_size_description, serving_size_units }) => (
                             <li
                                 key={id}
                                 className="group p-4 rounded border border-white/10 hover:border-indigo-500 transition cursor-pointer"
@@ -102,7 +102,7 @@ const Ingredients = () => {
                                     </div>
                                     <div className="text-sm text-white/50">
                                         {serving_size
-                                            ? `${serving_size}g${serving_size_description ? ` (${serving_size_description})` : ''}`
+                                            ? `${serving_size} ${serving_size_units}${serving_size_description ? ` (${serving_size_description})` : ''}`
                                             : serving_size_description || 'No serving info'}
                                     </div>
                                 </div>

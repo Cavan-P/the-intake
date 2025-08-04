@@ -4,7 +4,7 @@ import supabase from '../utils/supabase'
 
 import BackToHome from '../components/BackToHome'
 
-const EditIngredient = _ => {
+const EditRecipe = _ => {
     const { id } = useParams()
     const navigate = useNavigate()
 
@@ -87,7 +87,7 @@ const EditIngredient = _ => {
     return (
         <div className="min-h-screen bg-black flex flex-col items-center justify-center px-6 py-12 text-white font-extralight tracking-wide">
             <h1 className="text-4xl font-thin mb-8 bg-gradient-to-r from-blue-500 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
-                Edit Ingredient
+                Edit Recipe
             </h1>
 
             <form onSubmit={handleSubmit} className="w-full max-w-xl space-y-6">
@@ -135,4 +135,4 @@ const EditIngredient = _ => {
     )
 }
 
-export default EditIngredient
+export default EditRecipe

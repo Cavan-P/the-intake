@@ -114,7 +114,7 @@ const AddIngredient = _ => {
             user_id: user.id,
             name: form.name.trim(),
             brand: form.brand.trim() || null,
-            serving_size: toNum(form.serving_size_grams),
+            serving_size: form.serving_size,
             serving_size_description: form.serving_size_desc.trim() || null,
             serving_size_units: form.serving_size_units,
             calories: toNum(form.calories),
@@ -174,7 +174,7 @@ const AddIngredient = _ => {
             >
                 <Input label="Name *" name="name" value={form.name} onChange={handleChange} required />
                 <Input label="Brand" name="brand" value={form.brand} onChange={handleChange} />
-                <Input label="Serving Size" name="serving_size" value={form.serving_size} onChange={handleChange} type="number" />
+                <Input label="Serving Size" name="serving_size" value={form.serving_size} onChange={handleChange} />
                 <Input label="Serving Size Units" name="serving_size_units" value={form.serving_size_units} onChange={handleChange} />
                 <Input label="Serving Size Description" name="serving_size_desc" value={form.serving_size_description} onChange={handleChange} />
                 <Input label="Calories" name="calories" value={form.calories} onChange={handleChange} type="number" setep="1" />
