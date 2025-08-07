@@ -175,7 +175,25 @@ const AddIngredient = _ => {
                 <Input label="Name *" name="name" value={form.name} onChange={handleChange} required />
                 <Input label="Brand" name="brand" value={form.brand} onChange={handleChange} />
                 <Input label="Serving Size" name="serving_size" value={form.serving_size} onChange={handleChange} />
-                <Input label="Serving Size Units" name="serving_size_units" value={form.serving_size_units} onChange={handleChange} />
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Serving Size Units
+                    </label>
+                    <select
+                        name="serving_size_units"
+                        value={form.serving_size_units}
+                        onChange={handleChange}
+                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                    >
+                        <option value="">Select a unit</option>
+                        <option value="ml">Milliliters (ml)</option>
+                        <option value="cup">Cup(s)</option>
+                        <option value="tbsp">Tablespoon(s)</option>
+                        <option value="tsp">Teaspoon(s)</option>
+                        <option value="piece">Piece(s)</option>
+                    </select>
+                </div>
+
                 <Input label="Serving Size Description" name="serving_size_desc" value={form.serving_size_description} onChange={handleChange} />
                 <Input label="Calories" name="calories" value={form.calories} onChange={handleChange} type="number" setep="1" />
                 <Input label="Protein (g)" name="protein" value={form.protein} onChange={handleChange} type="number" step="0.1" />

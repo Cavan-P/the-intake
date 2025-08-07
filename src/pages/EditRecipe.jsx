@@ -1,202 +1,219 @@
 import { useEffect, useState } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import supabase from '../utils/supabase'
 
 import BackToHome from '../components/BackToHome'
 
-const EditRecipe = () => {
-    const params = useParams()
-    const navigate = useNavigate()
-    const [recipe, setRecipe] = useState(null)
-    const [ingredients, setIngredients] = useState([])
-    const [steps, setSteps] = useState([])
-    const [loading, setLoading] = useState(true)
+const units = ['tsp', 'tbsp', 'cup', 'pcs']
 
-    const recipeId = params.id
+const EditRecipe = () => {
+    const [ingredients, setIngredients] = useState([])
+    const [selected, setSelected] = useState([])
+    const [title, setTitle] = useState('')
+    const [description, setDescription] = useState('')
+    const [steps, setSteps] = useState([])
+    const [searchQuery, setSearchQuery] = useState('')
+    const [loading, setLoading] = useState(true)
+    const [user, setUser] = useState(null)
+
+    const navigate = useNavigate()
+    const recipeId = useParams().id
 
     useEffect(() => {
-        const fetchRecipeData = async () => {
-            setLoading(true)
+        const fetchData = async () => {
+            const { data: { user } } = await supabase.auth.getUser()
+            if (!user) return navigate('/login')
+            setUser(user)
 
-            const { data: recipeData, error: recipeError } = await supabase
-                .from('recipes')
-                .select('*')
-                .eq('id', recipeId)
-                .single()
+            const [{ data: recipe }, { data: ingredientsData }, { data: stepsData }, { data: userIngredients }] = await Promise.all([
+                supabase.from('recipes').select('*').eq('id', recipeId).single(),
+                supabase.from('recipe_ingredients').select('ingredient_id, amount, unit, ingredients(name)').eq('recipe_id', recipeId),
+                supabase.from('recipe_steps').select('step_number, instruction').eq('recipe_id', recipeId).order('step_number'),
+                supabase.from('ingredients').select('id, name').eq('user_id', user.id).order('name')
+            ])
 
-            const { data: ingredientData } = await supabase
-                .from('recipe_ingredients')
-                .select(`
-                    id,
-                    amount,
-                    unit,
-                    ingredient:ingredient_id (
-                        id,
-                        name
-                    )
-                `)
-                .eq('recipe_id', recipeId)
+            setTitle(recipe.name)
+            setDescription(recipe.description)
+            setSteps(stepsData.map(step => step.instruction))
 
-            const { data: stepData } = await supabase
-                .from('recipe_steps')
-                .select('*')
-                .eq('recipe_id', recipeId)
-                .order('step_number', { ascending: true })
+            const formattedSelected = ingredientsData.map(({ ingredient_id, amount, unit, ingredients }) => ({
+                id: ingredient_id,
+                name: ingredients.name,
+                amount,
+                unit
+            }))
 
-            setRecipe(recipeData)
-            setIngredients(ingredientData || [])
-            setSteps(stepData || [])
+            setSelected(formattedSelected)
+            setIngredients(userIngredients)
             setLoading(false)
         }
 
-        if (recipeId) fetchRecipeData()
-    }, [recipeId])
+        fetchData()
+    }, [navigate, recipeId])
 
-    const handleSave = async () => {
-        const { error } = await supabase
-        .from('recipes').update({
-            name: recipe.name,
-            description: recipe.description,
-        }).eq('id', recipeId)
-
-        for(const item of ingredients){
-            if(item.id && item.ingredient?.id){
-                await supabase.from('ingredients').update({ name: item.ingredient.name }).eq('id', item.ingredient.id)
-                await supabase.from('recipe_ingredients').update({ amount: item.amount, unit: item.unit }).eq('id', item.id)
-            }
-        }
-
-        for(const step of steps){
-            await supabase.from('recipe_steps').update({ instruction: step.instruction, step_number: step.step_number }).eq('id', step.id)
-        }
-
-        if(error){
-            console.error("Error updating recipe:", error)
-        }
-        else{
-            navigate(`/recipes/${recipeId}`) // back to view mode
-        }
-        
+    const toggleIngredient = ingredient => {
+        const exists = selected.find(i => i.id === ingredient.id)
+        if (exists) setSelected(selected.filter(i => i.id !== ingredient.id))
+        else setSelected([...selected, { ...ingredient, amount: '', unit: 'cup' }])
     }
 
-    const handleInputChange = (field, value) => {
-        setRecipe(prev => ({ ...prev, [field]: value }))
+    const updateSelected = (id, field, value) => {
+        setSelected(selected.map(i => i.id === id ? { ...i, [field]: value } : i))
     }
 
-    if (loading) return <p>Loading recipe...</p>
-    if (!recipe) return <p>Recipe not found.</p>
+    const updateStep = (index, value) => {
+        const updated = [...steps]
+        updated[index] = value
+        setSteps(updated)
+    }
+
+    const removeStep = index => {
+        const updated = [...steps]
+        updated.splice(index, 1)
+        setSteps(updated)
+    }
+
+    const addStep = () => setSteps([...steps, ''])
+
+    const filteredIngredients = ingredients.filter(i => i.name.toLowerCase().includes(searchQuery.toLowerCase()))
+
+    const saveRecipe = async () => {
+        if (!title.trim() || selected.length === 0 || steps.length === 0) {
+            alert("Title, ingredients, and steps are required.")
+            return
+        }
+
+        setLoading(true)
+
+        const { error: updateError } = await supabase.from('recipes')
+            .update({ name: title, description })
+            .eq('id', recipeId)
+
+        await supabase.from('recipe_ingredients').delete().eq('recipe_id', recipeId)
+        await supabase.from('recipe_steps').delete().eq('recipe_id', recipeId)
+
+        const ingredientInserts = selected.map(({ id, amount, unit }) => ({
+            recipe_id: recipeId,
+            ingredient_id: id,
+            amount,
+            unit
+        }))
+
+        const stepInserts = steps.map((instruction, index) => ({
+            recipe_id: recipeId,
+            step_number: index + 1,
+            instruction
+        }))
+
+        await supabase.from('recipe_ingredients').insert(ingredientInserts)
+        await supabase.from('recipe_steps').insert(stepInserts)
+
+        if (updateError) {
+            console.error('Error updating recipe:', updateError)
+        }
+
+        navigate(`/recipes/${recipeId}`)
+    }
+
+    if (loading) return <div className="text-white p-10">Loading...</div>
 
     return (
-        <div className="min-w-screen bg-black">
+        <div className="min-h-screen bg-black text-white px-6 py-12">
             <BackToHome />
+            <h1 className="text-4xl font-thin mb-8 bg-gradient-to-r from-blue-500 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
+                Edit Recipe
+            </h1>
 
-            <div className="min-h-screen bg-black px-6 py-12 max-w-3xl mx-auto text-white font-extralight tracking-wide">
-
-                <h1 className="text-4xl font-thin mb-6 bg-gradient-to-r from-blue-500 via-purple-600 to-indigo-600 bg-clip-text text-transparent select-none">
-                    Edit Recipe
-                </h1>
-
+            <div className="space-y-4 max-w-3xl">
                 <input
                     type="text"
-                    value={recipe.name}
-                    onChange={e => handleInputChange('name', e.target.value)}
-                    className="bg-black border border-white/30 rounded px-3 py-2 w-full text-white mb-4"
-                    placeholder="Recipe Name"
+                    value={title}
+                    onChange={e => setTitle(e.target.value)}
+                    placeholder="Recipe title"
+                    className="w-full p-3 rounded bg-white/5 border border-white/10 text-white placeholder-white/30"
                 />
-
                 <textarea
-                    value={recipe.description || ''}
-                    onChange={e => handleInputChange('description', e.target.value)}
-                    className="bg-black border border-white/30 rounded px-3 py-2 w-full text-white mb-8"
-                    placeholder="Recipe Description"
                     rows={3}
+                    value={description}
+                    onChange={e => setDescription(e.target.value)}
+                    placeholder="Recipe description"
+                    className="w-full p-3 rounded bg-white/5 border border-white/10 text-white placeholder-white/30"
                 />
+            </div>
 
-                <section className="mb-12">
-                    <h2 className="text-2xl font-light mb-4 border-b border-white/20 pb-2">
-                        Ingredients
-                    </h2>
-                    <ul className="space-y-2">
-                        {ingredients.map((item, index) => (
-                            <div key={item.id} className="flex gap-2 mb-3">
-                                <input
-                                    className="bg-white/10 p-2 rounded text-white w-16"
-                                    type="text"
-                                    value={item.amount}
-                                    onChange={e => {
-                                        const updated = [...ingredients]
-                                        updated[index].amount = e.target.value
-                                        setIngredients(updated)
-                                    }}
-                                />
-                                <input
-                                    className="bg-white/10 p-2 rounded text-white w-20"
-                                    type="text"
-                                    value={item.unit}
-                                    onChange={e => {
-                                        const updated = [...ingredients]
-                                        updated[index].unit = e.target.value
-                                        setIngredients(updated)
-                                    }}
-                                />
-                                <input
-                                    className="bg-white/10 p-2 rounded text-white flex-1"
-                                    type="text"
-                                    value={item.ingredient?.name || ''}
-                                    onChange={e => {
-                                        const updated = [...ingredients]
-                                        updated[index].ingredient.name = e.target.value
-                                        setIngredients(updated)
-                                    }}
-                                />
-                                <button onClick={() => {
-                                    const updated = [...ingredients]
-                                    updated.splice(index, 1)
-                                    setIngredients(updated)
-                                }}>
-                                    Remove
-                                </button>
+            <div className="flex mt-10">
+                <div className="w-2/3 pr-6">
+                    <h2 className="text-2xl mb-4">Ingredients</h2>
+                    {selected.map(({ id, name, amount, unit }) => (
+                        <div key={id} className="flex items-center space-x-4 mb-2">
+                            <span className="w-1/3 truncate">{name}</span>
+                            <input
+                                type="number"
+                                min="0"
+                                value={amount}
+                                onChange={e => updateSelected(id, 'amount', e.target.value)}
+                                className="w-24 p-1 bg-black/30 border border-white/20 rounded text-white"
+                            />
+                            <select
+                                value={unit}
+                                onChange={e => updateSelected(id, 'unit', e.target.value)}
+                                className="p-1 bg-black/30 border border-white/20 rounded text-white"
+                            >
+                                {units.map(u => <option key={u} value={u}>{u}</option>)}
+                            </select>
+                        </div>
+                    ))}
+                </div>
+                <div className="w-1/3">
+                    <h2 className="text-xl mb-2">Your Ingredients</h2>
+                    <input
+                        type="text"
+                        placeholder="Search"
+                        value={searchQuery}
+                        onChange={e => setSearchQuery(e.target.value)}
+                        className="w-full p-2 mb-2 rounded bg-white/5 border border-white/10 text-white placeholder-white/30"
+                    />
+                    <div className="space-y-2 max-h-64 overflow-y-auto">
+                        {filteredIngredients.map(({ id, name }) => (
+                            <div
+                                key={id}
+                                onClick={() => toggleIngredient({ id, name })}
+                                className="cursor-pointer bg-black hover:bg-white/10 p-2 rounded"
+                            >
+                                {name}
                             </div>
                         ))}
-                    </ul>
-                </section>
+                    </div>
+                </div>
+            </div>
 
-                <section>
-                    <h2 className="text-2xl font-light mb-4 border-b border-white/20 pb-2">
-                        Steps
-                    </h2>
-                    <ol className="list-decimal list-inside space-y-2 pl-4">
-                        {steps.map((step, index) => (
-                            <div key={step.id} className="mb-3">
-                                <textarea
-                                    className="w-full bg-white/10 p-2 rounded text-white"
-                                    value={step.instruction}
-                                    onChange={e => {
-                                        const updated = [...steps]
-                                        updated[index].instruction = e.target.value
-                                        setSteps(updated)
-                                    }}
-                                />
-                                <button onClick={() => {
-                                    const updated = [...steps]
-                                    updated.splice(index, 1)
-                                    setSteps(updated)
-                                }}>
-                                    Remove
-                                </button>
-                            </div>
-                        ))}
-
-                    </ol>
-                </section>
-
+            <div className="mt-12 max-w-3xl">
+                <h2 className="text-2xl mb-4">Steps</h2>
+                {steps.map((step, index) => (
+                    <div key={index} className="flex space-x-2 mb-3">
+                        <span className="text-purple-500">{index + 1}.</span>
+                        <textarea
+                            value={step}
+                            onChange={e => updateStep(index, e.target.value)}
+                            className="w-full p-2 rounded bg-white/5 border border-white/10 text-white placeholder-white/30"
+                        />
+                        <button onClick={() => removeStep(index)} className="text-red-500">✕</button>
+                    </div>
+                ))}
                 <button
-                    onClick={handleSave}
-                    className="mt-10 px-6 py-3 bg-gradient-to-r from-blue-500 via-purple-600 to-indigo-600 text-white rounded hover:opacity-90 transition"
+                    onClick={addStep}
+                    className="mt-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-sm"
                 >
-                    Save Changes
+                    + Add Step
                 </button>
             </div>
+
+            <button
+                onClick={saveRecipe}
+                className="mt-8 px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded text-lg"
+            >
+                Save Changes
+            </button>
         </div>
     )
 }

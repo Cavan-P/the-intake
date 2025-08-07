@@ -109,14 +109,10 @@ const EditIngredient = _ => {
                         className="rounded px-3 py-2 bg-black text-white outline-1 outline-indigo-400/20 font-thin focus:ring-2 focus:ring-indigo-500"
                     >
                         <option value="">Select a unit</option>
-                        <option value="g">Grams (g)</option>
-                        <option value="oz">Ounces (oz)</option>
-                        <option value="ml">Milliliters (ml)</option>
                         <option value="cup">Cup(s)</option>
                         <option value="tbsp">Tablespoon(s)</option>
                         <option value="tsp">Teaspoon(s)</option>
                         <option value="piece">Piece(s)</option>
-                        <option value="scoops">Scoop(s)</option>
                     </select>
                 </div>
                 <Input label="Serving Size Description" name="serving_size_description" />
