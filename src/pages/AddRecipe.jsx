@@ -65,7 +65,7 @@ const AddRecipe = _ => {
 
             const { data, error } = await supabase
                 .from('ingredients')
-                .select('id, name, brand, serving_size_grams, serving_size_description')
+                .select('id, name, brand, serving_size, serving_size_description')
                 .eq('user_id', user.id)
                 .order('name', { ascending: true })
 

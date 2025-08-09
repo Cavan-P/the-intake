@@ -2,10 +2,18 @@ import React, { useState, useEffect } from 'react'
 import supabase from '../utils/supabase'
 import { useNavigate } from 'react-router-dom'
 
+import ProfileDropdown from '../components/ProfileDropdown'
+
+import { UserIcon } from '@heroicons/react/24/outline'
+import { Cog6ToothIcon } from '@heroicons/react/24/outline'
+import { InformationCircleIcon } from '@heroicons/react/24/outline'
+import { ArrowLeftStartOnRectangleIcon } from '@heroicons/react/24/outline'
+
 const Home = () => {
     const [username, setUsername] = useState('')
     const [loading, setLoading] = useState(true)
     const [avatarURL, setAvatarURL] = useState('')
+
     const navigate = useNavigate()
 
     useEffect(() => {
@@ -35,36 +43,61 @@ const Home = () => {
     return (
         <div className="min-h-screen bg-black text-white flex flex-col items-center px-6 py-8">
             <header className="w-full max-w-4xl flex items-center justify-between mb-10">
-                <div className="flex items-center space-x-4">
-                    <img
-                        src={avatarURL || 'https://www.gravatar.com/avatar/?d=mp&s=48'}
-                        alt="Profile"
-                        className="w-12 h-12 rounded-full border border-white/30"
-                    />
-                    <span className="text-lg font-extralight tracking-wide">{username || 'User'}</span>
-                </div>
+                <ProfileDropdown 
+                    buttonLabel={(
+                        <div 
+                            className="flex items-center space-x-4"
+                        >
+                            <img
+                                src={avatarURL || 'https://www.gravatar.com/avatar/?d=mp&s=48'}
+                                alt="Profile"
+                                className="w-12 h-12 rounded-full border border-white/30"
+                            />
+                            <span className="text-lg font-extralight tracking-wide text-white">{username || 'User'}</span>
+                        </div>
+                    )}
+                    items={[
+                        { title: "Profile", url: "/profile", icon: <UserIcon /> },
+                        { title: "Settings", url: "/settings", icon: <Cog6ToothIcon /> },
+                        { title: "About", url: "/about", icon: <InformationCircleIcon /> },
+                        { title: "Log Out", action: handleLogout, icon: <ArrowLeftStartOnRectangleIcon /> },
+                    ]}
+                />
+
+                
 
                 <nav className="flex space-x-6 text-white/70 font-light tracking-wide">
                     <button
                         onClick={() => navigate('/dashboard')}
-                        className="hover:text-indigo-500 transition"
+                        className="hover:text-indigo-500 transition cursor-pointer"
                     >
                         Dashboard
                     </button>
                     <button
-                        onClick={() => navigate('/settings')}
-                        className="hover:text-indigo-500 transition"
+                        onClick={() => navigate('/log')}
+                        className="hover:text-indigo-500 transition cursor-pointer"
                     >
-                        Settings
+                        Daily Log
+                    </button>
+                    <button
+                        onClick={() => navigate('/recipes')}
+                        className="hover:text-indigo-500 transition cursor-pointer"
+                    >
+                        Recipes
+                    </button>
+                    <button
+                        onClick={() => navigate('/ingredients')}
+                        className="hover:text-indigo-500 transition cursor-pointer"
+                    >
+                        Ingredients
+                    </button>
+                    <button
+                        onClick={() => navigate('/reports')}
+                        className="hover:text-indigo-500 transition cursor-pointer"
+                    >
+                        Reports
                     </button>
                 </nav>
-
-                <button
-                    onClick={handleLogout}
-                    className="border border-red-700 text-red-600 px-4 py-2 rounded hover:bg-red-600 hover:text-white transition cursor-pointer font-light"
-                >
-                    Log Out
-                </button>
             </header>
 
             <main className="w-full max-w-4xl text-center">
