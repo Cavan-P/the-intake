@@ -13,6 +13,7 @@ const Home = () => {
     const [username, setUsername] = useState('')
     const [loading, setLoading] = useState(true)
     const [avatarURL, setAvatarURL] = useState('')
+    const [tiid, setTiid] = useState('')
 
     const navigate = useNavigate()
 
@@ -23,6 +24,7 @@ const Home = () => {
             if(session && session.user) {
                 setUsername(session.user.user_metadata?.username || '')
                 setAvatarURL(session.user.user_metadata?.avatar_url || '')
+                setTiid(session.user.id)
             }
 
             setLoading(false)
@@ -57,7 +59,7 @@ const Home = () => {
                         </div>
                     )}
                     items={[
-                        { title: "Profile", url: "/profile", icon: <UserIcon /> },
+                        { title: "Profile", url: `/profile/tiid_${tiid}`, icon: <UserIcon /> },
                         { title: "Settings", url: "/settings", icon: <Cog6ToothIcon /> },
                         { title: "About", url: "/about", icon: <InformationCircleIcon /> },
                         { title: "Log Out", action: handleLogout, icon: <ArrowLeftStartOnRectangleIcon /> },
