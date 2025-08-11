@@ -9,7 +9,7 @@ import { Cog6ToothIcon } from '@heroicons/react/24/outline'
 import { InformationCircleIcon } from '@heroicons/react/24/outline'
 import { ArrowLeftStartOnRectangleIcon } from '@heroicons/react/24/outline'
 
-const Home = () => {
+const Home = _ => {
     const [username, setUsername] = useState('')
     const [loading, setLoading] = useState(true)
     const [avatarURL, setAvatarURL] = useState('')
@@ -18,16 +18,35 @@ const Home = () => {
     const navigate = useNavigate()
 
     useEffect(() => {
+        
+        let subscription = null
+
         const getUser = async () => {
             const { data: { session } } = await supabase.auth.getSession()
 
             if(session && session.user) {
-                setUsername(session.user.user_metadata?.username || '')
-                setAvatarURL(session.user.user_metadata?.avatar_url || '')
-                setTiid(session.user.id)
-            }
 
-            setLoading(false)
+                const { data, error } = await supabase
+                    .from('users')
+                    .select('username, avatar_url')
+                    .eq('id', session.user.id)
+                    .single()
+
+                if(error){
+                    console.error('Error fetching user profile:', error)
+                    setUsername(session.user.user_metadata?.username || '')
+                    setAvatarURL(session.user.user_metadata?.avatar_url || '')
+                    setTiid(session.user.id)
+                }
+                else {
+                    setUsername(data.username)
+                    setAvatarURL(data.avatar_url)
+                    setTiid(session.user.id)
+                }
+            
+
+                setLoading(false)
+            }
         }
 
         getUser()
