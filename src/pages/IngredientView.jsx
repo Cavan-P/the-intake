@@ -73,27 +73,27 @@ const IngredientView = _ => {
                         <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-blue-500 via-pink-500 to-indigo-600" />
                         <div className="flex justify-between">
                             <span className="text-gray-400">Total Fat</span>
-                            <span className="text-white">{ingredient.fat_g}g</span>
+                            <span className="text-white">{ingredient.total_fat}g</span>
                         </div>
 
                         <div className="flex justify-between">
                             <span className="text-gray-400">Trans Fat</span>
-                            <span className="text-white">{ingredient.trans_fat_g}g</span>
+                            <span className="text-white">{ingredient.trans_fat}g</span>
                         </div>
 
                         <div className="flex justify-between">
                             <span className="text-gray-400">Saturated Fat</span>
-                            <span className="text-white">{ingredient.saturated_fat_g}g</span>
+                            <span className="text-white">{ingredient.saturated_fat}g</span>
                         </div>
                         
                         <div className="flex justify-between">
                             <span className="text-gray-400 font-semibold">Carbs</span>
-                            <span className="text-white">{ingredient.carbs_g}g</span>
+                            <span className="text-white">{ingredient.carbs}g</span>
                         </div>
 
                         <div className="flex justify-between">
                             <span className="text-gray-400">Sugars</span>
-                            <span className="text-white">{ingredient.sugar_g}g</span>
+                            <span className="text-white">{ingredient.sugars}g</span>
                         </div>
 
                         <div className="flex justify-between">
@@ -103,12 +103,12 @@ const IngredientView = _ => {
 
                         <div className="flex justify-between">
                             <span className="text-gray-400 font-semibold">Protein</span>
-                            <span className="text-white">{ingredient.protein_g}g</span>
+                            <span className="text-white">{ingredient.protein}g</span>
                         </div>
 
                         <div className="flex justify-between">
                             <span className="text-gray-400">Sodium</span>
-                            <span className="text-white">{ingredient.sodium_mg}mg</span>
+                            <span className="text-white">{ingredient.sodium}mg</span>
                         </div>
                         
                     </div>

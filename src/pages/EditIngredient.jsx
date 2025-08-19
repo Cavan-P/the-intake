@@ -12,9 +12,9 @@ const EditIngredient = _ => {
         name: '',
         brand: '',
         calories: '',
-        protein_g: '',
-        carbs_g: '',
-        fat_g: '',
+        protein: '',
+        carbs: '',
+        fat: '',
         serving_size: '',
         serving_size_units: '',
         serving_size_description: ''
@@ -94,9 +94,9 @@ const EditIngredient = _ => {
                 <Input label="Name *" name="name" required />
                 <Input label="Brand" name="brand" />
                 <Input label="Calories" name="calories" type="number" />
-                <Input label="Protein (g)" name="protein_g" type="number" step="0.1" />
-                <Input label="Carbs (g)" name="carbs_g" type="number" step="0.1" />
-                <Input label="Fat (g)" name="fat_g" type="number" step="0.1" />
+                <Input label="Protein (g)" name="protein" type="number" step="0.1" />
+                <Input label="Carbs (g)" name="carbs" type="number" step="0.1" />
+                <Input label="Fat (g)" name="fat" type="number" step="0.1" />
                 <Input label="Serving Size (accepts fraction or decimal)" name="serving_size" />
                 <div className="flex flex-col">
                     <label htmlFor="serving_size_units" className="mb-1 text-indigo-400 text-sm tracking-wide">

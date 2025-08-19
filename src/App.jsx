@@ -25,6 +25,7 @@ import IngredientView from './pages/IngredientView'
 import DailyLog from './pages/DailyLog'
 import Reports from './pages/Reports'
 import Profile from './pages/Profile'
+import LogFood from './pages/LogFood'
 
 function App() {
   const { id } = useParams()
@@ -48,6 +49,7 @@ function App() {
       <Route path="/log" element={<DailyLog /> } />
       <Route path="/reports" element={<Reports /> } />
       <Route path="/profile/:id" element={<Profile /> } />
+      <Route path="/log-food" element={<LogFood /> } />
     </Routes>
   )
 }

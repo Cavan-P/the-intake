@@ -9,6 +9,8 @@ import { Cog6ToothIcon } from '@heroicons/react/24/outline'
 import { InformationCircleIcon } from '@heroicons/react/24/outline'
 import { ArrowLeftStartOnRectangleIcon } from '@heroicons/react/24/outline'
 
+import DailyOverview from '../components/DailyOverview'
+
 const Home = _ => {
     const [username, setUsername] = useState('')
     const [loading, setLoading] = useState(true)
@@ -126,33 +128,50 @@ const Home = _ => {
                     Welcome, {username}!
                 </h1>
 
-                <p className="text-white/70 mb-12 font-extralight tracking-wide max-w-xl mx-auto">
-                    You've successfully logged in. This is your home base. More cool stuff coming soon.
-                </p>
-
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
                     <section className="bg-white/5 rounded-lg p-6 font-light tracking-wide">
-                        <h2 className="text-xl mb-3 font-semibold text-white/90">Dashboard</h2>
-                        <p className="text-white/60">
-                            Probably hopefully maybe put charts here or something else that will be cool.
-                        </p>
+                        <h2 className="text-xl mb-3 font-semibold text-white/90">Overview</h2>
+
+                        <DailyOverview />
                     </section>
 
                     <section className="bg-white/5 rounded-lg p-6 font-light tracking-wide flex flex-col items-center">
                         <h2 className="text-xl mb-3 font-semibold text-white/90">Quick Actions</h2>
+
+                        {/* Ingredients */}
                         <button
                             onClick={() => navigate('/ingredients')}
-                            className="px-5 py-2 rounded bg-gradient-to-r from-blue-500 via-purple-600 to-indigo-600 text-white font-thin hover:brightness-110 transition"
+                            className="group w-64 my-2 rounded-lg p-[2px] bg-gradient-to-r from-blue-500 via-purple-600 to-indigo-600 focus:outline-none focus:ring-2 focus:ring-purple-500/60 focus:ring-offset-2 focus:ring-offset-black"
                         >
+                            <span className="block w-full rounded-lg bg-black px-5 py-2 text-white font-thin tracking-wide transition
+                                            group-hover:bg-black/50 duration-500 hover:cursor-pointer">
                             View Your Ingredients
+                            </span>
                         </button>
+
+                        {/* Recipes */}
                         <button
                             onClick={() => navigate('/recipes')}
-                            className="my-5 px-5 py-2 rounded bg-gradient-to-r from-blue-500 via-purple-600 to-indigo-600 text-white font-thin hover:brightness-110 transition"
+                            className="group w-64 my-2 rounded-lg p-[2px] bg-gradient-to-r from-blue-500 via-purple-600 to-indigo-600 focus:outline-none focus:ring-2 focus:ring-purple-500/60 focus:ring-offset-2 focus:ring-offset-black"
                         >
+                            <span className="block w-full rounded-lg bg-black px-5 py-2 text-white font-thin tracking-wide transition
+                                            group-hover:bg-black/50 duration-500 hover:cursor-pointer">
                             View Your Recipes
+                            </span>
+                        </button>
+
+                        {/* Log Food */}
+                        <button
+                            onClick={() => navigate('/log-food')}
+                            className="group w-64 my-2 rounded-lg p-[2px] bg-gradient-to-r from-blue-500 via-purple-600 to-indigo-600 focus:outline-none focus:ring-2 focus:ring-purple-500/60 focus:ring-offset-2 focus:ring-offset-black"
+                        >
+                            <span className="block w-full rounded-lg bg-black px-5 py-2 text-white font-thin tracking-wide transition
+                                            group-hover:bg-black/50 duration-500 hover:cursor-pointer">
+                            Log Food
+                            </span>
                         </button>
                     </section>
+
                 </div>
             </main>
         </div>

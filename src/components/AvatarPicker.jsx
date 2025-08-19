@@ -53,7 +53,7 @@ const AvatarPicker = ({ user, setUser }) => {
                 alt={`${user.username}'s avatar`}
                 className="w-32 h-32 rounded-full border-2 p-1 cursor-pointer
                            border-transparent bg-gradient-to-r from-blue-400 via-purple-500 to-indigo-600
-                           bg-[length:200%_200%] bg-[position:0%_50%] hover:bg-[position:100%_50%] transition-bg duration-1000"
+                           bg-[length:200%_200%] bg-[position:3%_53%] hover:bg-[position:97%_47%] transition-bg duration-1000"
                 onClick={_ => setIsOpen(true)}
             />
 
