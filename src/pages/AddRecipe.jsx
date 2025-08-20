@@ -37,6 +37,8 @@ const AddRecipe = _ => {
     const [description, setDescription] = useState('')
     const [searchQuery, setSearchQuery] = useState('')
 
+    const [ingredientMacros, setIngredientMacros] = useState({})
+
     const [steps, setSteps] = useState([])
 
     const addStep = _ => setSteps([...steps, ''])
@@ -55,26 +57,26 @@ const AddRecipe = _ => {
 
     useEffect(() => {
             const fetchUserAndIngredients = async () => {
-            const { data: { user } } = await supabase.auth.getUser()
+                const { data: { user } } = await supabase.auth.getUser()
 
-            if (!user) {
-                navigate('/login')
-                return
-            }
-            setUser(user)
+                if (!user) {
+                    navigate('/login')
+                    return
+                }
+                setUser(user)
 
-            const { data, error } = await supabase
-                .from('ingredients')
-                .select('id, name, brand, serving_size, serving_size_description')
-                .eq('user_id', user.id)
-                .order('name', { ascending: true })
+                const { data, error } = await supabase
+                    .from('ingredients')
+                    .select('*')
+                    .eq('user_id', user.id)
+                    .order('name', { ascending: true })
 
-            if (error) {
-                console.error('Error fetching ingredients:', error)
-            } else {
-                setIngredients(data)
-            }
-            setLoading(false)
+                if (error) {
+                    console.error('Error fetching ingredients:', error)
+                } else {
+                    setIngredients(data)
+                }
+                setLoading(false)
             }
 
             fetchUserAndIngredients()
@@ -110,6 +112,29 @@ const AddRecipe = _ => {
 
         setLoading(true)
 
+        const recipeId = recipe.id
+
+        const ingredientInserts = selected.map(({ id, amount, unit }) => ({
+            recipe_id: recipeId,
+            ingredient_id: id,
+            amount,
+            unit
+        }))
+
+        const macroTotals = selected.reduce((acc, ing) => {
+            acc.carbs += ing.carbs
+            acc.protein += ing.protein
+            acc.total_fat += ing.total_fat
+            acc.trans_fat += ing.trans_fat
+            acc.saturated_fat += ing.saturated_fat
+            acc.sugar += ing.sugar
+            acc.added_sugars += ing.added_sugars
+            acc.sodium += ing.sodium
+            acc.calories += ing.calories
+            return acc
+        }, { carbs: 0, protein: 0, total_fat: 0, trans_fat: 0, saturated_fat: 0, sugar: 0, added_sugars: 0, sodium: 0, calories: 0 })
+        
+
         const { data: recipe, error: recipeError } = await supabase
             .from('recipes')
             .insert([
@@ -117,7 +142,9 @@ const AddRecipe = _ => {
                     user_id: user.id,
                     name: title,
                     description: description,
-                    shared: false
+                    shared: false,
+                    ...macroTotals 
+                    
                 }
             ])
             .select()
@@ -129,14 +156,7 @@ const AddRecipe = _ => {
             return
         }
 
-        const recipeId = recipe.id
-
-        const ingredientInserts = selected.map(({ id, amount, unit }) => ({
-            recipe_id: recipeId,
-            ingredient_id: id,
-            amount,
-            unit
-        }))
+        
 
         const stepInserts = steps.map((instruction, index) => ({
             recipe_id: recipeId,

@@ -17,6 +17,8 @@ const Home = _ => {
     const [avatarURL, setAvatarURL] = useState('')
     const [tiid, setTiid] = useState('')
 
+    const [macros, setMacros] = useState({})
+
     const navigate = useNavigate()
 
     useEffect(() => {
@@ -46,7 +48,6 @@ const Home = _ => {
                     setTiid(session.user.id)
                 }
             
-
                 setLoading(false)
             }
         }
@@ -132,7 +133,13 @@ const Home = _ => {
                     <section className="bg-white/5 rounded-lg p-6 font-light tracking-wide">
                         <h2 className="text-xl mb-3 font-semibold text-white/90">Overview</h2>
 
-                        <DailyOverview />
+                        <DailyOverview macros={{
+                            calories: 1200,
+                            calorieGoal: 2400,
+                            carbs: 700,
+                            protein: 143,
+                            fat: 100
+                        }}/>
                     </section>
 
                     <section className="bg-white/5 rounded-lg p-6 font-light tracking-wide flex flex-col items-center">

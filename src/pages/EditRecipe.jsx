@@ -105,6 +105,25 @@ const EditRecipe = () => {
             instruction
         }))
 
+        const macroTotals = selected.reduce((acc, ing) => {
+            acc.carbs += ing.carbs
+            acc.protein += ing.protein
+            acc.total_fat += ing.total_fat
+            acc.trans_fat += ing.trans_fat
+            acc.saturated_fat += ing.saturated_fat
+            acc.sugar += ing.sugar
+            acc.added_sugars += ing.added_sugars
+            acc.sodium += ing.sodium
+            acc.calories += ing.calories
+            return acc
+        }, { carbs: 0, protein: 0, total_fat: 0, trans_fat: 0, saturated_fat: 0, sugar: 0, added_sugars: 0, sodium: 0, calories: 0 })
+
+        await supabase
+            .from('recipes')
+            .insert([
+                {...macroTotals}
+            ])
+
         await supabase.from('recipe_ingredients').insert(ingredientInserts)
         await supabase.from('recipe_steps').insert(stepInserts)
 
