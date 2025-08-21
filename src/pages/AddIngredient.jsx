@@ -118,14 +118,14 @@ const AddIngredient = _ => {
             serving_size_description: form.serving_size_desc.trim() || null,
             serving_size_units: form.serving_size_units,
             calories: toNum(form.calories),
-            protein_g: toNum(form.protein),
-            carbs_g: toNum(form.carbs),
-            sugar_g: toNum(form.sugar),
+            protein: toNum(form.protein),
+            carbs: toNum(form.carbs),
+            sugars: toNum(form.sugar),
             added_sugar: toNum(form.added_sugar),
-            fat_g: toNum(form.fat),
-            saturated_fat_g: toNum(form.saturated_fat),
-            trans_fat_g: toNum(form.trans_fat),
-            sodium_mg: toNum(form.sodium),
+            total_fat: toNum(form.fat),
+            saturated_fat: toNum(form.saturated_fat),
+            trans_fat: toNum(form.trans_fat),
+            sodium: toNum(form.sodium),
             shared: form.shared
         }
 
@@ -190,7 +190,7 @@ const AddIngredient = _ => {
                         <option value="cup">Cup(s)</option>
                         <option value="tbsp">Tablespoon(s)</option>
                         <option value="tsp">Teaspoon(s)</option>
-                        <option value="piece">Piece(s)</option>
+                        <option value="pcs/scoops">Piece(s)</option>
                     </select>
                 </div>
 

@@ -40,8 +40,9 @@ const DailyOverview = _ => {
                     acc.calories += row.calories * row.servings
                     acc.calorieGoal = 2400
                     return acc
-                })
-                setMacros(totals)
+                }, {carbs: 0, protein: 0, total_fat: 0, calories: 0, calorieGoal: 0})
+                
+                setMacros(totals ? totals : {carbs: 0, protein: 0, total_fat: 0, calories: 0, calorieGoal: 0})
             }
             setLoading(false)
         }

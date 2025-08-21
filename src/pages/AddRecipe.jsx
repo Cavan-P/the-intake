@@ -5,7 +5,7 @@ import supabase from '../utils/supabase'
 import BackToHome from '../components/BackToHome'
 
 
-const units = ['g', 'kg', 'ml', 'l', 'tsp', 'tbsp', 'cup', 'oz', 'lb', 'pcs']
+const units = ['tsp', 'tbsp', 'cup', 'pcs']
 
 const Input = ({ label, name, value, onChange, type = 'text', required }) => (
     <div className="flex flex-col">
@@ -38,6 +38,13 @@ const AddRecipe = _ => {
     const [searchQuery, setSearchQuery] = useState('')
 
     const [ingredientMacros, setIngredientMacros] = useState({})
+
+    const unitConversion = {
+        cup: { cup: 1, tbsp: 16, tsp: 48 },
+        tbsp: { cup: 1/16, tbsp: 1, tsp: 3 },
+        tsp: { cup: 1/48, tbsp: 1/3, tsp: 1 },
+        pcs: { pcs: 1 }
+    };
 
     const [steps, setSteps] = useState([])
 
@@ -95,6 +102,7 @@ const AddRecipe = _ => {
     }
 
     const updateSelected = (id, field, value) => {
+        console.log('field', field)
         setSelected(
             selected.map(i => i.id == id ? { ...i, [field]: value } : i )
         )
@@ -112,27 +120,77 @@ const AddRecipe = _ => {
 
         setLoading(true)
 
-        const recipeId = recipe.id
+        const getMacroContribution = (ingredient, recipeUsage) => {
+            let { serving_size: servingSize, serving_size_units: servingUnit, calories, protein, carbs, total_fat, saturated_fat, trans_fat, sugars, added_sugar, sodium} = ingredient
+            let { amount, unit } = recipeUsage
 
-        const ingredientInserts = selected.map(({ id, amount, unit }) => ({
-            recipe_id: recipeId,
-            ingredient_id: id,
-            amount,
-            unit
-        }))
+            console.log('unit', unit, 'servingUnit', servingUnit)
 
-        const macroTotals = selected.reduce((acc, ing) => {
-            acc.carbs += ing.carbs
-            acc.protein += ing.protein
-            acc.total_fat += ing.total_fat
-            acc.trans_fat += ing.trans_fat
-            acc.saturated_fat += ing.saturated_fat
-            acc.sugar += ing.sugar
-            acc.added_sugars += ing.added_sugars
-            acc.sodium += ing.sodium
-            acc.calories += ing.calories
-            return acc
-        }, { carbs: 0, protein: 0, total_fat: 0, trans_fat: 0, saturated_fat: 0, sugar: 0, added_sugars: 0, sodium: 0, calories: 0 })
+            if(!(['tsp', 'tbsp', 'cup'].includes(unit.toLowerCase()))){
+                unit = 'pcs'
+            }
+
+            if(!(['tsp', 'tbsp', 'cup'].includes(servingUnit))){
+                servingUnit = 'pcs'
+            }
+
+            const conversionFactor = unitConversion[unit][servingUnit]
+            if(!conversionFactor) throw new Error(`Can't convert ${unit} to ${servingUnit}`)
+
+            console.log(conversionFactor, 'conversionFactor')
+
+            const useAsServingUnits = amount * conversionFactor
+
+            console.log(useAsServingUnits, 'useAsServingUnits')
+
+            const fraction = useAsServingUnits / servingSize
+
+            console.log(fraction, 'fraction')
+
+            return {
+                calories: calories * fraction,
+                protein: protein * fraction,
+                carbs: carbs * fraction,
+                total_fat: total_fat * fraction,
+                trans_fat: trans_fat * fraction,
+                saturated_fat: saturated_fat * fraction,
+                sugars: sugars * fraction,
+                added_sugar: added_sugar * fraction,
+                sodium: sodium * fraction
+            }
+        }
+
+        const calculateRecipeMacros = (ingredients, selected) => {
+            return selected.reduce((totals, usage) => {
+                console.log(selected, "asdfasdfasdfasdfasdf")
+                const ingredient = ingredients.find(i => i.id == usage.id)
+
+                console.log('ingredient', ingredient)
+
+                if(!ingredient) return totals
+
+                console.log(usage, "what the heck is this")
+
+                const macros = getMacroContribution(ingredient, usage)
+
+                console.log(macros, 'macrossssss')
+
+                return {
+                    carbs: totals.carbs + macros.carbs,
+                    protein: totals.protein + macros.protein,
+                    calories: totals.calories + macros.calories,
+                    total_fat: totals.total_fat + macros.total_fat,
+                    trans_fat: totals.trans_fat + macros.trans_fat,
+                    saturated_fat: totals.saturated_fat + macros.saturated_fat,
+                    sugars: totals.sugars + macros.sugars,
+                    added_sugar: totals.added_sugar + macros.added_sugar,
+                    sodium: totals.sodium + macros.sodium
+
+                }
+            }, { carbs: 0, protein: 0, total_fat: 0, trans_fat: 0, saturated_fat: 0, sugars: 0, added_sugar: 0, sodium: 0, calories: 0 })
+        }
+
+        const macroTotals = calculateRecipeMacros(ingredients, selected)
         
 
         const { data: recipe, error: recipeError } = await supabase
@@ -156,7 +214,15 @@ const AddRecipe = _ => {
             return
         }
 
-        
+        const recipeId = recipe.id
+
+        const ingredientInserts = selected.map(({ id, amount, unit }) => ({
+            recipe_id: recipeId,
+            ingredient_id: id,
+            amount,
+            unit,
+            user_id: user.id
+        }))
 
         const stepInserts = steps.map((instruction, index) => ({
             recipe_id: recipeId,
