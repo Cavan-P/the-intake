@@ -123,19 +123,31 @@ const EditRecipe = () => {
         }))
 
         const getMacroContribution = (ingredient, recipeUsage) => {
-            const { servingSize, servingUnit, calories, protein, carbs, total_fat, saturated_fat, trans_fat, sugars, added_sugar, sodium} = ingredient
+            let { serving_size: servingSize, serving_size_units: servingUnit, calories, protein, carbs, total_fat, saturated_fat, trans_fat, sugars, added_sugar, sodium} = ingredient
             let { amount, unit } = recipeUsage
 
-            if(unit == 'piece'){
+            console.log('unit', unit, 'servingUnit', servingUnit)
+
+            if(!(['tsp', 'tbsp', 'cup'].includes(unit.toLowerCase()))){
                 unit = 'pcs'
             }
 
+            if(!(['tsp', 'tbsp', 'cup'].includes(servingUnit))){
+                servingUnit = 'pcs'
+            }
+
             const conversionFactor = unitConversion[unit][servingUnit]
-            if(!conversionFactor) throw new Error(`Can't convert ${unit} to ${servingUnit}`)
+            if(!conversionFactor) throw new Error(`Can't convert ${unit} to ${servingUnit} for ingredient ${ingredient.name}`)
+
+            console.log(conversionFactor, 'conversionFactor')
 
             const useAsServingUnits = amount * conversionFactor
 
+            console.log(useAsServingUnits, 'useAsServingUnits')
+
             const fraction = useAsServingUnits / servingSize
+
+            console.log(fraction, 'fraction')
 
             return {
                 calories: calories * fraction,
@@ -152,11 +164,18 @@ const EditRecipe = () => {
 
         const calculateRecipeMacros = (ingredients, selected) => {
             return selected.reduce((totals, usage) => {
-                const ingredient = ingredients.find(i => i.id == usage.ingredient_id)
+                console.log(selected, "asdfasdfasdfasdfasdf")
+                const ingredient = ingredients.find(i => i.id == usage.id)
+
+                console.log('ingredient', ingredient)
 
                 if(!ingredient) return totals
 
+                console.log(usage, "what the heck is this")
+
                 const macros = getMacroContribution(ingredient, usage)
+
+                console.log(macros, 'macrossssss')
 
                 return {
                     carbs: totals.carbs + macros.carbs,

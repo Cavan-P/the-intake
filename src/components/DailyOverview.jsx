@@ -17,6 +17,9 @@ const DailyOverview = _ => {
 
         const loadMacros = async _ => {
 
+            const startOfToday = new Date()
+            startOfToday.setHours(0, 0, 0, 0)
+
             const { data: { user } } = await supabase.auth.getUser()
 
             if(!user){
@@ -28,11 +31,15 @@ const DailyOverview = _ => {
                 .from('log')
                 .select('*')
                 .eq('user_id', user?.id)
+                .gte('created_at', startOfToday.toISOString())
 
             if(macroError){
                 console.error('Error loading macros', macroError)
             }
             else{
+
+                console.log(macroData)
+
                 const totals = macroData.reduce((acc, row) => {
                     acc.carbs += row.carbs;
                     acc.protein += row.protein;
@@ -67,7 +74,7 @@ const DailyOverview = _ => {
                     Today's Intake:
                 </h2>
                 <p className="text-3xl font-light my-2 text-white">
-                    {macros.calories} / {macros.calorieGoal}
+                    {macros.calories.toFixed(1)} / {macros.calorieGoal}
                 </p>
                 <h2 className="text-lg font-thin tracking-[5px] text-gray-100">
                     calories
@@ -100,9 +107,9 @@ const DailyOverview = _ => {
                     </ResponsiveContainer>
                 </div>
                 <div className="flex justify-around mt-4 text-sm">
-                    <span style={{ color: "#3B82F6" }}>Carbs: {macros.carbs}g</span>
-                    <span style={{ color: "#9333EA" }}>Protein: {macros.protein}g</span>
-                    <span style={{ color: "#F472B6" }}>Fat: {macros.total_fat}g</span>
+                    <span style={{ color: "#3B82F6" }}>Carbs: {macros.carbs.toFixed(1)}g</span>
+                    <span style={{ color: "#9333EA" }}>Protein: {macros.protein.toFixed(1)}g</span>
+                    <span style={{ color: "#F472B6" }}>Fat: {macros.total_fat.toFixed(1)}g</span>
                 </div>
             </div>
         </div>

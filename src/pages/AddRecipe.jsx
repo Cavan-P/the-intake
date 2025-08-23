@@ -97,7 +97,7 @@ const AddRecipe = _ => {
         }
 
         else {
-            setSelected([...selected, { ...ingredient, amount: '', unit: 'cups'}])
+            setSelected([...selected, { ...ingredient, amount: '', unit: 'cup'}])
         }
     }
 
@@ -135,7 +135,7 @@ const AddRecipe = _ => {
             }
 
             const conversionFactor = unitConversion[unit][servingUnit]
-            if(!conversionFactor) throw new Error(`Can't convert ${unit} to ${servingUnit}`)
+            if(!conversionFactor) throw new Error(`Can't convert ${unit} to ${servingUnit} for ingredient ${ingredient.name}`)
 
             console.log(conversionFactor, 'conversionFactor')
 
