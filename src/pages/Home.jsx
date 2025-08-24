@@ -9,6 +9,8 @@ import { Cog6ToothIcon } from '@heroicons/react/24/outline'
 import { InformationCircleIcon } from '@heroicons/react/24/outline'
 import { ArrowLeftStartOnRectangleIcon } from '@heroicons/react/24/outline'
 
+import { checkTitles } from '../utils/titles'
+
 import DailyOverview from '../components/DailyOverview'
 
 const Home = _ => {
@@ -32,7 +34,7 @@ const Home = _ => {
 
                 const { data, error } = await supabase
                     .from('users')
-                    .select('username, avatar_url')
+                    .select('*')
                     .eq('id', session.user.id)
                     .single()
 
@@ -46,6 +48,9 @@ const Home = _ => {
                     setUsername(data.username)
                     setAvatarURL(data.avatar_url)
                     setTiid(session.user.id)
+
+                    
+                    await checkTitles(data, { action: 'SIGN_IN' }, supabase)
                 }
             
                 setLoading(false)
@@ -82,7 +87,7 @@ const Home = _ => {
                     )}
                     items={[
                         { title: "Profile", url: `/profile/tiid_${tiid}`, icon: <UserIcon /> },
-                        { title: "Settings", url: "/settings", icon: <Cog6ToothIcon /> },
+                        { title: "Account", url: "/account", icon: <Cog6ToothIcon /> },
                         { title: "About", url: "/about", icon: <InformationCircleIcon /> },
                         { title: "Log Out", action: handleLogout, icon: <ArrowLeftStartOnRectangleIcon /> },
                     ]}

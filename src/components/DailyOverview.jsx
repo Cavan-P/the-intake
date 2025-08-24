@@ -38,8 +38,6 @@ const DailyOverview = _ => {
             }
             else{
 
-                console.log(macroData)
-
                 const totals = macroData.reduce((acc, row) => {
                     acc.carbs += row.carbs;
                     acc.protein += row.protein;

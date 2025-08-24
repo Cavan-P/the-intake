@@ -15,7 +15,7 @@ import GetStarted from "./pages/Get-Started"
 import Home from "./pages/Home"
 import AddIngredient from './pages/AddIngredient'
 import Ingredients from './pages/Ingredients'
-import Settings from './pages/Settings'
+import Account from './pages/Account'
 import Recipes from './pages/Recipes'
 import AddRecipe from './pages/AddRecipe'
 import RecipeView from './pages/RecipeView'
@@ -39,7 +39,7 @@ function App() {
       <Route path='/home' element={<Home /> } />
       <Route path='/add-ingredient' element={<AddIngredient /> } />
       <Route path='/ingredients' element={<Ingredients /> } />
-      <Route path='/settings' element={<Settings /> } />
+      <Route path='/account' element={<Account /> } />
       <Route path='/recipes' element={<Recipes /> } />
       <Route path="/add-recipe" element={<AddRecipe /> } />
       <Route path='/recipes/:id' element={<RecipeView /> } />

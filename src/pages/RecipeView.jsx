@@ -12,7 +12,6 @@ const RecipeView = _ => {
     const [loading, setLoading] = useState(true)
 
     const recipeId = params.id
-    console.log(params.id)
 
     useEffect(() => {
         const fetchRecipeData = async () => {

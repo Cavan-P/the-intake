@@ -5,6 +5,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 //Components
 import BackToHome from '../components/BackToHome'
 import AvatarPicker from '../components/AvatarPicker'
+import { titleDefinitions } from '../utils/titles'
 
 const Profile = _ => {
 
@@ -14,6 +15,8 @@ const Profile = _ => {
     const [user, setUser] = useState(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
+    const [numPublic, setNumPublic] = useState(0)
+    const [titles, setTitles] = useState([])
 
     const navigate = useNavigate()
 
@@ -51,11 +54,27 @@ const Profile = _ => {
     }
 
     useEffect(_ => {
-        fetchUser(slug).then(data => {
-            if(data) setUser(data)
+        const fetchData = async _ => {
+            const data = await fetchUser(slug)
 
+            if(data){
+                setUser(data)
+
+                const { data: numIngredients } = await supabase
+                    .from('ingredients')
+                    .select('name')
+                    .eq('user_id', data.id)
+                    .eq('shared', 'TRUE')
+
+                setNumPublic(numIngredients?.length || 0)
+                const titleArray = data.titles.split(',')
+                setTitles(titleArray)
+            }
             setLoading(false)
-        })
+
+        }
+
+        fetchData()
     }, [slug])
 
     if(loading){
@@ -76,53 +95,69 @@ const Profile = _ => {
     return (
         <div className="min-h-screen bg-black text-white font-thin tracking-wide px-6 py-12 mx-auto">
             <BackToHome />
+        
+            {/* Profile Header */}
+            <div className="flex flex-col md:flex-row md:items-start md:space-x-8">
+                {/* Avatar */}
+                <div className="flex-shrink-0">
+                    <AvatarPicker user={user} setUser={setUser} />
+                </div>
+        
+                {/* User Info */}
+                <div className="mt-6 md:mt-0 flex flex-col space-y-4">
+                    <h1 className="text-5xl bg-gradient-to-r from-blue-400 via-purple-500 to-indigo-600 bg-clip-text text-transparent">
+                        {user.username}
+                    </h1>
+        
+                    {/* Titles */}
+                    <div className="flex flex-wrap gap-2">
+                        {
+                            titles.map((title, index) => {
 
-            <div className="flex flex-col items-center space-y-6">
-                {/*Avatar*/}
+                                const def = titleDefinitions.find(d => d.name == title)
 
-                <AvatarPicker user={user} setUser={setUser} />
-
-                {/*username*/}
-                <h1 className="text-5xl bg-gradient-to-r from-blue-400 via-purple-500 to-indigo-600 bg-clip-text text-transparent">
-                    {user.username}
-                </h1>
-
-                {/* Join Date or Custom Title */}
-                <p className="text-gray-400 text-sm uppercase tracking-wide">
-                {user.id == '17cb1ca8-6854-4cf0-acc1-7c7dc53a70cc'
-                    ? "Member since the beginning"
-                    : `member since ${new Date(user.created_at).toLocaleDateString()}`}
-                </p>
-
-                {/* Bio */}
-                {user && (
-                    <p className="text-gray-300 max-w-lg text-center whitespace-pre-wrap">
-                        {user.bio}
+                                return (
+                                    <span title={def?.description || title} key={index} className="hover:cursor-help px-4 py-1 border border-indigo-500 rounded-full text-indigo-400 uppercase text-xs tracking-wide font-semibold">
+                                        {title}
+                                    </span>
+                                )
+                            })
+                        }
+                    </div>
+            
+                    {/* Bio */}
+                    {user.bio && (
+                        <p className="text-gray-300 max-w-2xl whitespace-pre-wrap">{user.bio}</p>
+                    )}
+                </div>
+            </div>
+        
+            {/* Content Sections */}
+            <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-8">
+                {/* Fun Facts */}
+                <div>
+                    <h2 className="text-xl font-semibold mb-3">Public Information</h2>
+                    {/* Join Date */}
+                    <p className="text-gray-400 text-sm uppercase tracking-wide">
+                        {
+                            user.id === '17cb1ca8-6854-4cf0-acc1-7c7dc53a70cc'
+                                ? "Date Joined: The Beginning"
+                                : `Date Joined: ${new Date(user.created_at).toLocaleDateString()}`
+                        }
                     </p>
-                )}
-
-                {/* Favorite Macro (just for fun) */}
-                {user && (
-                    <p className="mt-4 text-indigo-400 italic">
+                    <p className="text-indigo-400 font-light">
                         Favorite Macro: {user.favorite_macro}
                     </p>
-                )}
-
-                {/* Admin badge if super admin */}
-                {user.is_super_admin && (
-                    <div className="mt-6 px-4 py-1 border border-indigo-500 rounded-full text-indigo-400 uppercase text-xs tracking-wide font-semibold">
-                        Admin
+                    <p className="text-indigo-400 font-light">
+                        Public Ingredients: {numPublic}
+                    </p>
                     </div>
-                    
-                )}
-
-                {user.id == '17cb1ca8-6854-4cf0-acc1-7c7dc53a70cc' && (
-                    <div className="mt-6 px-4 py-1 border border-indigo-500 rounded-full text-indigo-400 uppercase text-xs tracking-wide font-semibold">
-                        Is Cavan
-                    </div>
-                    
-                )}
-
+            
+                    {/* Maybe Future Stuff */}
+                    <div>
+                    <h2 className="text-xl font-semibold mb-3">More Coming Soon</h2>
+                    <p className="text-gray-400">Placeholder content.</p>
+                </div>
             </div>
         </div>
     )

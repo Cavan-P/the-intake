@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import supabase from '../utils/supabase'
 
 import BackToHome from '../components/BackToHome'
+import { checkTitles } from '../utils/titles'
 
 const { data: { user } } = await supabase.auth.getUser()
 
@@ -109,12 +110,22 @@ const AddIngredient = _ => {
 
         const toNum = val => (val == '' ? 0 : parseFloat(val))
 
+        let servingSize = form.serving_size
+
+        if(servingSize.includes('/')){
+            const [num, denom] = servingSize.split('/').map(Number)
+            servingSize = num / denom
+        }
+        else {
+            servingSize = toNum(servingSize)
+        }
+
         const newIngredient = {
             id: crypto.randomUUID(),
             user_id: user.id,
             name: form.name.trim(),
             brand: form.brand.trim() || null,
-            serving_size: form.serving_size,
+            serving_size: servingSize,
             serving_size_description: form.serving_size_desc.trim() || null,
             serving_size_units: form.serving_size_units,
             calories: toNum(form.calories),
@@ -139,6 +150,11 @@ const AddIngredient = _ => {
         }
         else {
             setMessage('Added ingredient ' + newIngredient.name)
+
+            const { data: userRow } = await supabase.from('users').select('*').eq('id', user.id).single()
+
+            await checkTitles(userRow, { action: 'ADD_INGREDIENT', shared: form.shared ? 'TRUE' : 'FALSE' }, supabase)
+
             setForm({
                 name: '',
                 brand: '',
